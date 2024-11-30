@@ -1,15 +1,6 @@
-import { eq, sql, tables, useDrizzle } from "../utils/drizzle";
-import { usernameRegex } from "./register.post";
+import { eq, tables, useDrizzle } from "../utils/drizzle";
 import bcrypt from "bcryptjs";
-
-function uuidv4() {
-  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
-    (
-      +c ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
-    ).toString(16)
-  );
-}
+import { usernameRegex } from "./register.post";
 
 export default defineEventHandler(async (h3) => {
   const contentType = getHeader(h3, "Content-Type");
@@ -20,7 +11,6 @@ export default defineEventHandler(async (h3) => {
   const username = body.username;
   const password = body.password;
   const name = body.name;
-  const data = body.data;
 
   if (
     !username ||
@@ -70,12 +60,13 @@ export default defineEventHandler(async (h3) => {
       statusMessage: "Invalid credentials",
     });
 
-  // We've now authenticated the user, we can create their sync bucket
+  const buckets = await db
+    .select()
+    .from(tables.syncBucket)
+    .where(eq(tables.syncBucket.name, name));
 
-  const token = uuidv4();
-  await db.run(
-    sql`INSERT INTO buckets(token, userId, data, name) VALUES (${token}, ${user.id}, ${data}, ${name})`
-  );
+  if (buckets.length != 1)
+    throw createError({ statusCode: 404, statusMessage: "Bucket not found" });
 
-  return { token };
+  return { token: buckets[0].token, data: buckets[0].data };
 });

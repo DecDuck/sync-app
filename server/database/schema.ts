@@ -15,6 +15,7 @@ export const syncBucket = sqliteTable("buckets", {
   token: text("token").primaryKey(),
   userId: integer("userId"),
   data: text("data"),
+  name: text("name"),
 });
 
 export const syncBucketRelation = relations(syncBucket, ({ one }) => ({
