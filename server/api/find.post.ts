@@ -29,12 +29,6 @@ export default defineEventHandler(async (h3) => {
       statusMessage: "Password must be 11 characters or more.",
     });
 
-  if (!data || typeof data != "string")
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Data must be a string",
-    });
-
   if (!name || typeof name != "string")
     throw createError({
       statusCode: 400,
